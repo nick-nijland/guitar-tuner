@@ -174,9 +174,24 @@ export class TunerService {
 
     this.analyser.getFloatTimeDomainData(this.buf);
 
-    // Lower bound for pitch search: 20% below the lowest string in the active set.
-    const lowestStringFreq = Math.min(...this.activeStrings().map((s) => s.freq));
-    const freq = this.detectPitch(this.buf, this.ctx.sampleRate, lowestStringFreq * 0.8);
+    // When a string is locked, search only within ±700 cents of that string's
+    // frequency. This prevents sympathetic resonances from lower strings (e.g.
+    // open E2 ringing while you play E4) from hijacking the detection.
+    // Without a lock, fall back to the full range of the active string set.
+    const locked = this.lockedStringIndex();
+    const strings = this.activeStrings();
+    const SEARCH_RATIO = Math.pow(2, 700 / 1200); // ≈ 1.498 (a perfect fifth)
+    let minFreq: number;
+    let maxFreq: number;
+    if (locked >= 0 && locked < strings.length) {
+      const target = strings[locked].freq;
+      minFreq = target / SEARCH_RATIO;
+      maxFreq = target * SEARCH_RATIO;
+    } else {
+      minFreq = Math.min(...strings.map((s) => s.freq)) * 0.8;
+      maxFreq = Math.max(...strings.map((s) => s.freq)) * 1.2;
+    }
+    const freq = this.detectPitch(this.buf, this.ctx.sampleRate, minFreq, maxFreq);
 
     if (freq > 0) {
       this.recentFreqs.push(freq);
@@ -203,6 +218,7 @@ export class TunerService {
     buf: Float32Array<ArrayBuffer>,
     sampleRate: number,
     minFreq: number,
+    maxFreq: number,
   ): number {
     let rms = 0;
     for (let i = 0; i < buf.length; i++) rms += buf[i] * buf[i];
@@ -210,7 +226,7 @@ export class TunerService {
     if (rms < 0.005) return -1;
 
     const n = buf.length;
-    const minLag = Math.floor(sampleRate / 400);
+    const minLag = Math.max(1, Math.floor(sampleRate / maxFreq));
     const maxLag = Math.min(Math.ceil(sampleRate / minFreq), Math.floor(n / 2));
 
     const corr = new Float32Array(maxLag + 1) as Float32Array<ArrayBuffer>;
