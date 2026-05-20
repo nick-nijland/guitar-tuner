@@ -1,1 +1,23 @@
-/* You can add global styles to this file, and also import other style files */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0d0d14;
+  --panel: #1a1a27;
+  --border: #2a2a3d;
+  --text: #f0eeff;
+  --muted: #6e6a88;
+  --in-tune: #00e676;
+  --close: #ffb300;
+  --off-tune: #ff5252;
+  --accent: #7c6aff;
+  --accent-hover: #6a59e0;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+}
