@@ -95,16 +95,10 @@
     font-size: 0.875rem;
     color: var(--muted);
     min-height: 1.2em;
-    transition: color 0.2s;
   }
 
-  &.active {
-    .note-name {
-      color: var(--text);
-    }
-    .freq-label {
-      color: var(--muted);
-    }
+  &.active .note-name {
+    color: var(--text);
   }
 }
 
@@ -129,10 +123,8 @@
     }
   }
 
-  &.in-tune {
-    .needle-group {
-      filter: drop-shadow(0 0 8px var(--in-tune));
-    }
+  &.in-tune .needle-group {
+    filter: drop-shadow(0 0 8px var(--in-tune));
   }
 }
 
@@ -190,12 +182,11 @@
   &.off      { color: var(--off-tune); }
 }
 
-/* Strings */
+/* String indicators */
 .strings {
   display: flex;
   gap: 0.5rem;
   width: 100%;
-  justify-content: center;
 }
 
 .string-indicator {
@@ -204,17 +195,18 @@
   flex-direction: column;
   align-items: center;
   gap: 0.15rem;
-  padding: 0.5rem 0.25rem;
+  padding: 0.6rem 0.25rem;
   border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--panel);
-  transition: border-color 0.2s, background 0.2s;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
 
   .string-name {
     font-size: 0.95rem;
     font-weight: 600;
     color: var(--muted);
-    transition: color 0.2s;
+    transition: color 0.15s;
   }
 
   .string-freq {
@@ -223,13 +215,22 @@
     opacity: 0.5;
   }
 
-  &.active {
+  &:hover {
     border-color: var(--accent);
-    background: color-mix(in srgb, var(--accent) 10%, var(--panel));
+    background: color-mix(in srgb, var(--accent) 8%, var(--panel));
 
-    .string-name {
-      color: var(--accent);
-    }
+    .string-name { color: var(--text); }
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.selected {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 15%, var(--panel));
+
+    .string-name { color: var(--accent); }
   }
 }
 
@@ -242,56 +243,4 @@
   border-radius: 6px;
   background: color-mix(in srgb, var(--off-tune) 10%, transparent);
   border: 1px solid color-mix(in srgb, var(--off-tune) 30%, transparent);
-}
-
-/* Toggle button */
-.toggle-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.75rem 2rem;
-  border: none;
-  border-radius: 50px;
-  background: var(--accent);
-  color: #fff;
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-
-  &:hover {
-    background: var(--accent-hover);
-  }
-
-  &:active {
-    transform: scale(0.97);
-  }
-
-  &.listening {
-    background: var(--panel);
-    color: var(--off-tune);
-    border: 1px solid var(--off-tune);
-
-    .btn-dot {
-      background: var(--off-tune);
-      animation: pulse 1.2s ease-in-out infinite;
-    }
-
-    &:hover {
-      background: color-mix(in srgb, var(--off-tune) 10%, var(--panel));
-    }
-  }
-
-  .btn-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.7);
-  }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.3; }
 }

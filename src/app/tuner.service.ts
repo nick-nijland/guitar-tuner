@@ -77,6 +77,11 @@ export interface TunerState {
 export class TunerService {
   readonly instrument = signal<Instrument>('guitar');
   readonly tuning = signal<Tuning>('standard');
+  readonly lockedStringIndex = signal<number>(-1);
+
+  setLockedString(index: number): void {
+    this.lockedStringIndex.set(index);
+  }
 
   readonly activeStrings = () => {
     switch (this.instrument()) {
@@ -151,6 +156,7 @@ export class TunerService {
     this.ctx = null;
     this.analyser = null;
     this.buf = null;
+    this.lockedStringIndex.set(-1);
     this.state.set({
       isListening: false,
       hasSignal: false,
@@ -256,9 +262,15 @@ export class TunerService {
     index: number;
   } {
     const strings = this.activeStrings();
+    const locked = this.lockedStringIndex();
+
+    if (locked >= 0 && locked < strings.length) {
+      const s = strings[locked];
+      return { name: s.name, freq: s.freq, cents: 1200 * Math.log2(freq / s.freq), index: locked };
+    }
+
     let best = { name: strings[0].name, freq: strings[0].freq, cents: 0, index: 0 };
     let minAbsCents = Infinity;
-
     for (let i = 0; i < strings.length; i++) {
       const s = strings[i];
       const cents = 1200 * Math.log2(freq / s.freq);
@@ -267,7 +279,6 @@ export class TunerService {
         best = { name: s.name, freq: s.freq, cents, index: i };
       }
     }
-
     return best;
   }
 }

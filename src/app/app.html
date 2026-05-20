@@ -52,22 +52,12 @@
       }
 
       <!-- Note display -->
-      <div class="note-display" [class.active]="state().hasSignal">
-        <span class="note-name">{{ state().hasSignal ? state().noteName : '--' }}</span>
+      <div class="note-display" [class.active]="lockedStringIndex() >= 0">
+        <span class="note-name">{{ displayNoteName() }}</span>
         <span class="freq-label">{{ displayFreq() }}</span>
       </div>
 
       <!-- SVG Gauge -->
-      <!--
-        Gauge geometry (pivot at 150,165, radius 130):
-          -90° = -50 cents (left)   → (20, 165)
-          -27° = -15 cents          → (91, 49.2)
-           -9° = -5 cents           → (129.72, 36.56)
-            0° = 0 cents  (top)     → (150, 35)
-           +9° = +5 cents           → (170.28, 36.56)
-          +27° = +15 cents          → (209, 49.2)
-          +90° = +50 cents (right)  → (280, 165)
-      -->
       <div class="gauge-wrapper">
         <svg viewBox="0 0 300 170" class="gauge" [class]="tuneStatus()">
           <!-- Background arc -->
@@ -118,13 +108,17 @@
         </div>
       </div>
 
-      <!-- Strings -->
+      <!-- Strings — tap to start/stop tuning that string -->
       <div class="strings">
         @for (s of strings(); track s.name; let i = $index) {
-          <div class="string-indicator" [class.active]="state().stringIndex === i">
+          <button
+            class="string-indicator"
+            [class.selected]="lockedStringIndex() === i"
+            (click)="selectString(i)"
+          >
             <span class="string-name">{{ s.name }}</span>
             <span class="string-freq">{{ s.freq }}</span>
-          </div>
+          </button>
         }
       </div>
 
@@ -132,16 +126,6 @@
       @if (errorMessage) {
         <div class="error-message">{{ errorMessage }}</div>
       }
-
-      <!-- Toggle button -->
-      <button
-        class="toggle-btn"
-        [class.listening]="state().isListening"
-        (click)="toggleListening()"
-      >
-        <span class="btn-dot"></span>
-        {{ state().isListening ? 'Stop Tuning' : 'Start Tuning' }}
-      </button>
 
     </div>
   </main>

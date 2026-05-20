@@ -16,6 +16,7 @@ export class App implements OnDestroy {
   readonly state = this.tuner.state;
   readonly instrument = this.tuner.instrument;
   readonly tuning = this.tuner.tuning;
+  readonly lockedStringIndex = this.tuner.lockedStringIndex;
 
   readonly strings = computed(() => {
     switch (this.instrument()) {
@@ -34,12 +35,39 @@ export class App implements OnDestroy {
   errorMessage = '';
 
   setInstrument(instrument: Instrument): void {
+    this.tuner.stop();
     this.tuner.setInstrument(instrument);
   }
 
   setTuning(tuning: Tuning): void {
+    this.tuner.stop();
     this.tuner.setTuning(tuning);
   }
+
+  async selectString(index: number): Promise<void> {
+    const { isListening } = this.state();
+
+    if (!isListening) {
+      try {
+        this.errorMessage = '';
+        this.tuner.setLockedString(index);
+        await this.tuner.start();
+      } catch {
+        this.tuner.setLockedString(-1);
+        this.errorMessage = 'Microphone access denied. Please allow microphone access and try again.';
+      }
+    } else if (this.lockedStringIndex() === index) {
+      this.tuner.stop();
+    } else {
+      this.tuner.setLockedString(index);
+    }
+  }
+
+  readonly displayNoteName = computed(() => {
+    const locked = this.lockedStringIndex();
+    if (locked >= 0) return this.strings()[locked]?.name ?? '--';
+    return '--';
+  });
 
   readonly needleAngle = computed(() => {
     const { hasSignal, cents } = this.state();
@@ -71,22 +99,9 @@ export class App implements OnDestroy {
     const status = this.tuneStatus();
     if (status === 'in-tune') return 'IN TUNE';
     if (status === 'close') return 'CLOSE';
-    if (this.state().isListening) return 'LISTENING...';
-    return '';
+    if (this.state().isListening) return 'PLAY THE STRING...';
+    return 'TAP A STRING TO START';
   });
-
-  async toggleListening(): Promise<void> {
-    if (this.state().isListening) {
-      this.tuner.stop();
-    } else {
-      try {
-        this.errorMessage = '';
-        await this.tuner.start();
-      } catch {
-        this.errorMessage = 'Microphone access denied. Please allow microphone access and try again.';
-      }
-    }
-  }
 
   ngOnDestroy(): void {
     this.tuner.stop();
