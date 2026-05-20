@@ -1,59 +1,33 @@
-# GuitarTuner
+# 🎸 Guitar Tuner
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.11.
+A chromatic tuner for guitar, bass, and banjo — built with Angular 21, running entirely in the browser.
 
-## Development server
+**Live app:** https://nick-nijland.github.io/guitar-tuner
 
-To start a local development server, run:
+## Features
 
-```bash
-ng serve
-```
+- **Microphone-based pitch detection** using autocorrelation with parabolic interpolation
+- **Guitar** — Standard, Half Step Down, D Standard, FACGCE tunings
+- **Bass guitar** — Standard 4-string (E1–A1–D2–G2)
+- **Banjo** — Open G (gDGBD)
+- Visual needle gauge with flat / in-tune / sharp colour zones
+- Installable as a PWA — works offline, adds to your home screen
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Install on iPhone
 
-## Code scaffolding
+1. Open **https://nick-nijland.github.io/guitar-tuner** in Safari
+2. Tap the share button → **Add to Home Screen**
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Run locally
 
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+Requires Node.js 24+.
 
 ```bash
-ng build
+npm install
+npm start        # dev server at http://localhost:4200
+npm run build    # production build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## How it works
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+The app captures audio via `getUserMedia`, runs autocorrelation on the raw time-domain samples each animation frame to find the fundamental period, then converts that to a frequency and matches it against the active string set. A 5-frame moving average smooths the needle. Bass strings (down to 41 Hz) are handled by using a 4096-sample buffer so periods that long fit within the analysis window.
